@@ -14,3 +14,5 @@ do
     git pull $i
     git commit -a -m "Merging $i with production version $VERSION"
 done
+
+exit 0
