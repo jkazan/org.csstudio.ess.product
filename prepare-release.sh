@@ -33,14 +33,14 @@ mvn -Dtycho.mode=maven org.eclipse.tycho:tycho-versions-plugin:1.0.0:set-version
 
 # update product because set-version doesn't
 echo ::: Updating product versions in product files :::
-sed -i '' -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g' repository/alarm-config.product
-sed -i '' -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g' repository/alarm-notifier.product
-sed -i '' -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g' repository/alarm-server.product
-sed -i '' -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g' repository/cs-studio-ess.product
-sed -i '' -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g' repository/jms2rdb.product
+sed -i repository/alarm-config.product -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g'
+sed -i repository/alarm-notifier.product -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g'
+sed -i repository/alarm-server.product -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g'
+sed -i repository/cs-studio-ess.product -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g'
+sed -i repository/jms2rdb.product -e 's/\(<product[^>]* version="\)[^"]*\("[^>]*>\)/\1'${VERSION}'\2/g'
 
 echo ::: Updating product versions in master POM file :::
-sed -i '' -e 's/\(<product\.version>\)[^<]*\(\<\/product\.version>\)/\1'${VERSION}'\2/g' pom.xml
+sed -i pom.xml -e 's/\(<product\.version>\)[^<]*\(\<\/product\.version>\)/\1'${VERSION}'\2/g'
 
 HTML="<h2>Version ${VERSION} - $(date +"%Y-%m-%d")</h2><ul>"
 
@@ -70,8 +70,8 @@ HTML="${HTML//\$/\\\$}"
 # remove newlines
 HTML="${HTML//[$'\n']/}"
 
-sed -i '' -e '/<\/p>/ a\
-'"${HTML}" plugins/se.ess.ics.csstudio.startup.intro/html/changelog.html
+sed -i plugins/se.ess.ics.csstudio.startup.intro/html/changelog.html -e '/<\/p>/ a\
+'"${HTML}"
 
 if [ "$PUSH" = "true" ]
 then
@@ -81,5 +81,5 @@ then
   git tag ESS-CSS-$VERSION
   echo ::: Pushing changes :::
   git push origin
-  git push origin ESS-CS-Studio-$VERSION
+  # git push origin ESS-CS-Studio-$VERSION
 fi
