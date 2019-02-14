@@ -1,11 +1,14 @@
 import os
 import sys
 import requests
+from requests.auth import HTTPBasicAuth
 import re
 import subprocess
 import fileinput
 from getpass import getpass
 import platform
+import json
+import datetime
 
 def checkVersion(user_input):
     """Checks the CSS version input against artifactory.
@@ -63,18 +66,20 @@ def checkVersion(user_input):
                 return
 
 # def checkJavaHome():
-#     java_home = subprocess.check_output("echo $JAVA_HOME", shell=True).decode("utf8")
+#     java_home = subprocess.check_output("echo $JAVA_HOME",
+#                                             shell=True).decode("utf8")
 #     print(java_home)
 #     if java_home.isspace():
 #         print("You don't seem to have a path in the JAVA_HOME variable")
-    #     if platform.system() == "Linux":
-    #         suggestion_cmd = "dirname $(readlink -f $(which java))"
-    #     elif platform.system() == "Darwin":
-    #         suggestion_cmd = "dirname $(readlink $(which java))"
+#         if platform.system() == "Linux":
+#             suggestion_cmd = "dirname $(readlink -f $(which java))"
+#         elif platform.system() == "Darwin":
+#             suggestion_cmd = "dirname $(readlink $(which java))"
 
-    #     suggestion = subprocess.check_output(suggestion_cmd, shell=True).decode("utf8")
-    #     print("Put the following your `.bashrc` file or `.profile` file:\n{}"
-    #               .format(suggestion))
+#         suggestion = subprocess.check_output(suggestion_cmd,
+#                                                  shell=True).decode("utf8")
+#         print("Put the following your `.bashrc` file or `.profile` file:\n{}"
+#                   .format(suggestion))
 
 def prepareRelease(path, release_url, version, notes, ce_version):
     """Run `prepare-release.sh`.
@@ -155,7 +160,7 @@ def updatePom(path, version):
     replacement = "<cs-studio.version>" + majmin + "</cs-studio.version>"
     replace(path, pattern, replacement)
 
-def getChangelogNotes(version):
+def getChangelogNotes(version, auth):
     """Get notes for changelog from Jira.
 
     Get notes from Jira via REST interface and format the notes to be
@@ -166,21 +171,21 @@ def getChangelogNotes(version):
         version: Full CSS version number to be released, e.g. 4.6.1.12
     """
 
-    # Jira login information
-    # user = input("Username: ")
-    # passw = getpass("Password: ")
-    user = "johanneskazantzidis"
-    passw = "Saraeva1"
-    auth = (user, passw)
-    headers = {"Content-Type":"application/json"}
+
 
     # REST url for issues specific for the release
     url = 'https://jira.esss.lu.se/rest/api/2/' \
       'search?jql=project=CSSTUDIO AND fixVersion="ESS CS-Studio '+version+'"'
-      #TODO: error handling / empty return handling
 
+    headers = {"Content-Type":"application/json"}
     response = requests.get(url, auth=auth, headers=headers)
     data = response.json()
+
+    if response.status_code == 400:
+        print("{} in Jira. Could not fetch changelog notes.\nAborting"
+                  .format(data["errorMessages"][0][:-1]))
+        sys.exit(1)
+
     note_list = []
     pattern = re.compile("CSS-CE #[0-9]+")
 
@@ -221,6 +226,92 @@ def mergeRepos(path, version):
 
     subprocess.check_call(merge_cmd, shell=True)
 
+def updateConfluence(css_version, ce_version, notes, auth):
+    """Update CSS confluence page's release notes.
+
+    Args:
+        css_version: New CSS release version.
+        ce_version: CSS CE version of which the CSS release is based on.
+        notes: Notes to be inserted into the changelog.
+        auth: Atlassian athentication (username, password) pair.
+    """
+    base_url = "https://confluence.esss.lu.se/rest/api/content/"
+    page_id = "295789998" # Use 129630590 for the real page
+
+    # Pull data from the confluence page
+    get_url = base_url + page_id + "?expand=body.view,version"
+    get_response = requests.get(get_url, auth=auth)
+    data = get_response.json()
+
+    put_url = base_url + page_id
+    headers = {"Content-type": "application/json"}
+
+    # Code for generating the TOC
+    toc ='<p><ac:structured-macro ac:name="toc" ac:schema-version="1" ' \
+      'ac:macro-id="f222cec9-dc7a-413d-abc7-a4710756bec0"><ac:parameter ' \
+      'ac:name="maxLevel">2</ac:parameter></ac:structured-macro></p>'
+
+    # Header with link etc. for the new version text
+    d = datetime.date.today()
+    link_address_date = d.strftime("%d.%m.%Y")
+    header_date = d.strftime("%B %m, %Y")
+    header_link = '"https://confluence.esss.lu.se/display/CR/' \
+      'ESS+CS-Studio+Releases#ESSCS-StudioReleases-Ver.' \
+      + css_version + '(' + link_address_date +')"'
+
+    # Create the new section to put on the confluence page
+    new_section = '<h2><a href=' + header_link + ' rel="nofollow">Ver.' \
+      + css_version + '</a>    - ' + header_date + \
+      '</h2><h3>Compatibility Notes</h3>' \
+      '<ul><li>Based on the most recent source code of CS-Studio CE&nbsp;' \
+      + ce_version + '-SNAPSHOT.</li></ul><h3>Updated Features</h3><ul><li>' \
+      + notes + '</li></ul>'
+
+    # Check if this version has already been put on the confluence page. If so,
+    # ask user if they still want to update with the given information. If user
+    # chooses 'no', skip the confluence update.
+    if "Ver. " + css_version +"" in data["body"]["view"]["value"]:
+        accepted = {"yes": True, "y": True, "no": False, "n": False}
+        while True:
+            choice = input("A header for CSS version {} was found on " \
+                               "the confluence page. Are you sure you wish " \
+                               "to post your notes? [y/n]"
+                               .format(css_version)).lower()
+
+            if choice not in accepted:
+                print("\x1b[31mPlease answer with 'y' or 'n'.\x1b[0m")
+            elif not accepted[choice]:
+                print("Skipping confluence update")
+                return
+            else:
+                break
+
+    # Construct json payload
+    payload = {}
+    payload["type"] = data["type"]
+    payload["title"] = data["title"]
+    payload["version"] = {}
+    payload["version"]["number"] = data["version"]["number"]+1
+
+    # Remove toc part, we'll make a new toc
+    break_string = '"toc\"> </div></p>'
+    content = data["body"]["view"]["value"].split(break_string)
+
+    payload["body"] = {}
+    payload["body"]["storage"] = {}
+    payload["body"]["storage"]["value"] = toc + new_section + content[1]
+
+    payload["body"]["storage"]["representation"] = data["body"]["view"]["representation"]
+
+    # Post to confluence and verify response
+    put_response = requests.put(put_url, data=json.dumps(payload),
+                                    auth=auth, headers=headers)
+
+    if put_response.status_code != 200:
+        print("Response code {}\nAborting" .format(put_response.status_code))
+        sys.exit(1)
+
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser(description="CSS release tool")
@@ -235,19 +326,12 @@ if __name__ == "__main__":
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
-    notes = getChangelogNotes(args.version)
+    user = "johanneskazantzidis"
+    passw = getpass("Password: ")
+    auth = (user, passw)
+    notes = getChangelogNotes(args.version, auth)
     prepareRelease(dir_path, release_url, args.version, notes, args.ce_version)
     updatePom(dir_path+"pom.xml", args.version)
     mergeRepos(dir_path+"merge.sh", args.version)
-    # # Commit org.csstudio.ess.product to master branch
-    # # Do pull request
-    # # Merge the master branch of the corresponding ESSICS repository into the production one, and tag it.
-    # # TALK TO CLAUDIO BEFORE THIS STEP: Start the production pipeline in Jenkins.
-    # prepareNextRelease(args.version)
-    # # Commit everything to master branch.
-    # # Update the ESS CS-Studio Releases page.
-    # # Create a new TechNew.
 
-    # # Be sure the CS-Studio User's Manual document was updated to document all the new/updated features to be released.
-    # # Update the CS-Studio Compatibility Notes and Known Bugs document (last version comes first).
-    # # From the CS-Studio Kanban board on Atlassian, release the new version, pressing the Release… link (see Figures 6 and 7).
+    updateConfluence(args.version, args.ce_version, notes, auth)
