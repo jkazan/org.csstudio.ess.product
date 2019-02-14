@@ -1,3 +1,37 @@
+
+    # 1.
+    # Checks the CSS version input against artifactory:
+    # Grabs latest CSS version number from
+    # https://artifactory.esss.lu.se/artifactory/CS-Studio/production/ and
+    # increments nano version (i.e. last number) by one. If the resulting
+    # number differs from user input, the user is prompted for
+    # verification to continue anyway.
+
+    # 2.
+    # Get notes for changelog from Jira:
+    # Get notes from Jira via REST interface and format the notes to be
+    # accepted by the `prepare-release.sh` script (see function
+    # `prepareRelease` in this file for more info.).
+
+    # 3.
+    # Run `prepare-release.sh`:
+    # `prepare-release.sh` is a community developed script for creating
+    # new splash screen, change 'about' dialog, change Ansible reference
+    # file, update plugin versions, update product versions in product
+    # files, update product versions in master POM file and
+    # commit-tag-push changes.
+
+    # 4.
+    # Update pom.xml file:
+    # Update cs-studio major, and minor, version number in pom.xml file.
+
+    # 5.
+    # Merge all relevant repositories into production.
+
+    # 6.
+    # Update CSS confluence page's release notes:
+    # Create a new linked header
+
 import os
 import sys
 import requests
@@ -311,8 +345,7 @@ def updateConfluence(css_version, ce_version, notes, auth):
         print("Response code {}\nAborting" .format(put_response.status_code))
         sys.exit(1)
 
-
-if __name__ == "__main__":
+def main():
     import argparse
     parser = argparse.ArgumentParser(description="CSS release tool")
     parser.add_argument("version", type=str, help="New release version")
@@ -335,3 +368,7 @@ if __name__ == "__main__":
     mergeRepos(dir_path+"merge.sh", args.version)
 
     updateConfluence(args.version, args.ce_version, notes, auth)
+
+
+if __name__ == "__main__":
+    main()
