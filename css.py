@@ -86,21 +86,31 @@ def checkVersion(user_input):
             else:
                 return
 
-# def checkJavaHome():
-#     java_home = subprocess.check_output("echo $JAVA_HOME",
-#                                             shell=True).decode("utf8")
-#     print(java_home)
-#     if java_home.isspace():
-#         print("You don't seem to have a path in the JAVA_HOME variable")
-#         if platform.system() == "Linux":
-#             suggestion_cmd = "dirname $(readlink -f $(which java))"
-#         elif platform.system() == "Darwin":
-#             suggestion_cmd = "dirname $(readlink $(which java))"
+def checkJavaHome():
+    # if "JAVA_HOME" in os.environ:
+    #     return # env var found, all good
+    # el
+    if platform.system() == "Linux":
+        print("You don't seem to have a path in the JAVA_HOME variable")
+        suggestion_cmd = "dirname $(readlink -f $(which java))"
+    elif platform.system() == "Darwin":
+        suggestion_cmd = "dirname $(readlink $(which java))"
 
-#         suggestion = subprocess.check_output(suggestion_cmd,
-#                                                  shell=True).decode("utf8")
-#         print("Put the following your `.bashrc` file or `.profile` file:\n{}"
-#                   .format(suggestion))
+    suggestion = subprocess.check_output(suggestion_cmd,
+                                             shell=True).decode("utf8")
+
+    print("Put the following your `.profile` file or `.bashrc` file:\n{}"
+                  .format(suggestion))
+
+    accepted = {"yes": True, "y": True, "no": False, "n": False}
+    while True:
+        choice = input("Would you still like to proceed? [y/n]").lower()
+        if choice not in accepted:
+            print("Please answer with 'y' or 'n'.")
+        elif accepted[choice]:
+            return
+        else:
+            sys.exit(0)
 
 def prepareRelease(path, release_url, version, notes, ce_version):
     """Run `prepare-release.sh`.
@@ -339,31 +349,35 @@ def main():
 
     1. Checks the CSS version input against artifactory:
     Grabs latest CSS version number from
-    https://artifactory.esss.lu.se/artifactory/CS-Studio/production/ and
-    increments nano version (i.e. last number) by one. If the resulting
-    number differs from user input, the user is prompted for
+    artifactory.esss.lu.se/artifactory/CS-Studio/production/
+    and increments nano version (i.e. last number) by one. If the
+    resulting number differs from user input, the user is prompted for
     verification to continue anyway.
 
-    2. Get notes for changelog from Jira:
+    2. Check if user has `JAVA_HOME` environment variable set:
+        The variable needed for the `prepare-release.sh` and
+    `prepare-next-release.sh` scripts
+
+    3. Get notes for changelog from Jira:
     Get notes from Jira via REST interface and format the notes to be
     accepted by the `prepare-release.sh` script (see function
     `prepareRelease` in this file for more info.).
 
-    3. Run `prepare-release.sh`:
+    4. Run `prepare-release.sh`:
     `prepare-release.sh` is a community developed script for creating
     new splash screen, change 'about' dialog, change Ansible reference
     file, update plugin versions, update product versions in product
     files, update product versions in master POM file and
     commit-tag-push changes.
 
-    4. Update pom.xml file:
+    5. Update pom.xml file:
     Update cs-studio major, and minor, version number in pom.xml file.
 
-    5. Merge all relevant repositories into production.
+    6. Merge all relevant repositories into production.
 
-    6. Update CSS confluence page's release notes:
+    7. Update CSS confluence page's release notes:
     Create a new linked header
-    """
+"""
     parser = argparse.ArgumentParser(description="CSS release tool")
     parser.add_argument("version", type=str, help="New release version")
     parser.add_argument("ce_version", type=str, help="CS-Studio CE versopm " \
@@ -372,7 +386,7 @@ def main():
     args = parser.parse_args()
 
     checkVersion(args.version)
-    # checkJavaHome() #TODO: perhaps make this function
+    checkJavaHome()
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
@@ -387,5 +401,4 @@ def main():
     updateConfluence(args.version, args.ce_version, notes, auth)
 
 if __name__ == "__main__":
-    # main()
-    checkJavaHome() #TODO: perhaps make this function
+    main()
