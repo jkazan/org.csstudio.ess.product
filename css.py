@@ -205,12 +205,8 @@ def getChangelogNotes(version, auth):
     Args:
         version: Full CSS version number to be released, e.g. 4.6.1.12
     """
-
-
-
     # REST url for issues specific for the release
-    url = 'https://jira.esss.lu.se/rest/api/2/' \
-      'search?jql=project=CSSTUDIO AND fixVersion="ESS CS-Studio '+version+'"'
+    url = 'https://jira.esss.lu.se/rest/api/2/search?jql=project=CSSTUDIO AND fixVersion="ESS CS-Studio '+version+'"'
 
     headers = {"Content-Type":"application/json"}
     response = requests.get(url, auth=auth, headers=headers)
@@ -263,6 +259,9 @@ def mergeRepos(path, version):
 
 def updateConfluence(css_version, ce_version, notes, auth):
     """Update CSS confluence page's release notes.
+
+    Create a new linked header and add "Compatibility Notes" and
+    "Updated Features".
 
     Args:
         css_version: New CSS release version.
@@ -346,7 +345,7 @@ def updateConfluence(css_version, ce_version, notes, auth):
         print("Response code {}\nAborting" .format(put_response.status_code))
         sys.exit(1)
 
-def main():
+def main(css_version, ce_version):
     """Main for automatic CSS deployment.
 
     This script performs the following steps:
@@ -380,31 +379,36 @@ def main():
     6. Merge all relevant repositories into production.
 
     7. Update CSS confluence page's release notes:
-    Create a new linked header and add "Updated Features"
+    Create a new linked header and add "Compatibility Notes" and
+    "Updated Features".
+
+    Args:
+        css_version: New CSS release version.
+        ce_version: CS-Studio CE version that new release is based on.
     """
-    parser = argparse.ArgumentParser(description="CSS release tool")
-    parser.add_argument("version", type=str, help="New release version")
-    parser.add_argument("ce_version", type=str, help="CS-Studio CE versopm " \
-                            "that new release is based on")
-
-    args = parser.parse_args()
-
     checkJavaHome()
-    checkVersion(args.version)
+    checkVersion(css_version)
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
     user = input("ESS username: ") # Used for Jira and Confluence
     passw = getpass("ESS Password: ") # Used for Jira and Confluence
     auth = (user, passw)
-    notes = getChangelogNotes(args.version, auth)
-    prepareRelease(dir_path, release_url, args.version, notes, args.ce_version)
-    updatePom(dir_path+"pom.xml", args.version)
-    mergeRepos(dir_path+"merge.sh", args.version)
+    notes = getChangelogNotes(css_version, auth)
+    prepareRelease(dir_path, release_url, css_version, notes, ce_version)
+    updatePom(dir_path+"pom.xml", css_version)
+    mergeRepos(dir_path+"merge.sh", css_version)
 
-    updateConfluence(args.version, args.ce_version, notes, auth)
+    updateConfluence(css_version, ce_version, notes, auth)
 
     print("\nDone")
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description="CSS release tool")
+    parser.add_argument("css_version", type=str, help="New CSS release version")
+    parser.add_argument("ce_version", type=str, help="CS-Studio CE version " \
+                            "that new release is based on")
+
+    args = parser.parse_args()
+
+    main(args.css_version, args.ce_version)
