@@ -390,8 +390,8 @@ def main():
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
-    user = "johanneskazantzidis"
-    passw = getpass("Password: ")
+    user = input("ESS username: ")
+    passw = getpass("ESS Password: ")
     auth = (user, passw)
     notes = getChangelogNotes(args.version, auth)
     prepareRelease(dir_path, release_url, args.version, notes, args.ce_version)
