@@ -387,4 +387,5 @@ def main():
     updateConfluence(args.version, args.ce_version, notes, auth)
 
 if __name__ == "__main__":
-    main()
+    # main()
+    checkJavaHome() #TODO: perhaps make this function
