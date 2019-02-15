@@ -31,6 +31,36 @@ import requests
 from requests.auth import HTTPBasicAuth
 import json
 
+def checkJavaHome():
+    """Check if user has `JAVA_HOME` environment variable set.
+
+    The variable needed for the `prepare-release.sh` and
+    `prepare-next-release.sh` scripts
+    """
+    if "JAVA_HOME" in os.environ:
+        return # env var found, all good
+    elif platform.system() == "Linux":
+        print("You don't seem to have a path in the JAVA_HOME variable")
+        suggestion_cmd = "dirname $(readlink -f $(which java))"
+    elif platform.system() == "Darwin":
+        suggestion_cmd = "dirname $(readlink $(which java))"
+
+    suggestion = subprocess.check_output(suggestion_cmd,
+                                             shell=True).decode("utf8")
+
+    print("Put the following your `.profile` file or `.bashrc` file:\n{}"
+                  .format(suggestion))
+
+    accepted = {"yes": True, "y": True, "no": False, "n": False}
+    while True:
+        choice = input("Would you still like to proceed? [y/n]").lower()
+        if choice not in accepted:
+            print("Please answer with 'y' or 'n'.")
+        elif accepted[choice]:
+            return
+        else:
+            sys.exit(0)
+
 def checkVersion(user_input):
     """Checks the CSS version input against artifactory.
 
@@ -85,32 +115,6 @@ def checkVersion(user_input):
                 sys.exit()
             else:
                 return
-
-def checkJavaHome():
-    # if "JAVA_HOME" in os.environ:
-    #     return # env var found, all good
-    # el
-    if platform.system() == "Linux":
-        print("You don't seem to have a path in the JAVA_HOME variable")
-        suggestion_cmd = "dirname $(readlink -f $(which java))"
-    elif platform.system() == "Darwin":
-        suggestion_cmd = "dirname $(readlink $(which java))"
-
-    suggestion = subprocess.check_output(suggestion_cmd,
-                                             shell=True).decode("utf8")
-
-    print("Put the following your `.profile` file or `.bashrc` file:\n{}"
-                  .format(suggestion))
-
-    accepted = {"yes": True, "y": True, "no": False, "n": False}
-    while True:
-        choice = input("Would you still like to proceed? [y/n]").lower()
-        if choice not in accepted:
-            print("Please answer with 'y' or 'n'.")
-        elif accepted[choice]:
-            return
-        else:
-            sys.exit(0)
 
 def prepareRelease(path, release_url, version, notes, ce_version):
     """Run `prepare-release.sh`.
@@ -285,7 +289,7 @@ def updateConfluence(css_version, ce_version, notes, auth):
     # Header with link etc. for the new version text
     d = datetime.date.today()
     link_address_date = d.strftime("%d.%m.%Y")
-    header_date = d.strftime("%B %m, %Y")
+    header_date = d.strftime("%B %d, %Y")
     header_link = '"https://confluence.esss.lu.se/display/CR/' \
       'ESS+CS-Studio+Releases#ESSCS-StudioReleases-Ver.' \
       + css_version + '(' + link_address_date +')"'
@@ -347,16 +351,16 @@ def main():
 
     This script performs the following steps:
 
-    1. Checks the CSS version input against artifactory:
+    1. Check if user has `JAVA_HOME` environment variable set:
+    The variable needed for the `prepare-release.sh` and
+    `prepare-next-release.sh` scripts
+
+    2. Checks the CSS version input against artifactory:
     Grabs latest CSS version number from
     artifactory.esss.lu.se/artifactory/CS-Studio/production/
     and increments nano version (i.e. last number) by one. If the
     resulting number differs from user input, the user is prompted for
     verification to continue anyway.
-
-    2. Check if user has `JAVA_HOME` environment variable set:
-        The variable needed for the `prepare-release.sh` and
-    `prepare-next-release.sh` scripts
 
     3. Get notes for changelog from Jira:
     Get notes from Jira via REST interface and format the notes to be
@@ -376,8 +380,8 @@ def main():
     6. Merge all relevant repositories into production.
 
     7. Update CSS confluence page's release notes:
-    Create a new linked header
-"""
+    Create a new linked header and add "Updated Features"
+    """
     parser = argparse.ArgumentParser(description="CSS release tool")
     parser.add_argument("version", type=str, help="New release version")
     parser.add_argument("ce_version", type=str, help="CS-Studio CE versopm " \
@@ -385,8 +389,8 @@ def main():
 
     args = parser.parse_args()
 
-    checkVersion(args.version)
     checkJavaHome()
+    checkVersion(args.version)
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
@@ -399,6 +403,8 @@ def main():
     mergeRepos(dir_path+"merge.sh", args.version)
 
     updateConfluence(args.version, args.ce_version, notes, auth)
+
+    print("\nDone")
 
 if __name__ == "__main__":
     main()
