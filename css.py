@@ -51,6 +51,7 @@ def checkJavaHome():
     print("Put the following your `.profile` file or `.bashrc` file:\n{}"
                   .format(suggestion))
 
+    # Ask if user wants to try to continue even though `JAVA_HOME` was not found
     accepted = {"yes": True, "y": True, "no": False, "n": False}
     while True:
         choice = input("Would you still like to proceed? [y/n]").lower()
@@ -155,6 +156,22 @@ def prepareNextRelease(version): #TODO: Test function
         ".".join(version.split(".")[:-1]),
         str(int(version.split(".")[-1])+1)
         ])
+
+    # Verify version with user
+    print("Suggested version number for next release is {}"
+              .format(next_version))
+
+    accepted = {"yes": True, "y": True, "no": False, "n": False}
+    while True:
+        choice = input("Is this correct{}? [y/n]"
+                             . format(user_input)).lower()
+        if choice not in accepted:
+            print("\x1b[31mPlease answer with 'y' or 'n'.\x1b[0m")
+        elif not accepted[choice]:
+            next_version = input("Enter next version number?")
+            break
+        else:
+            break
 
     path = os.path.dirname(os.path.abspath(__file__))+"/"
 
@@ -359,12 +376,11 @@ def main(css_version, ce_version):
     artifactory.esss.lu.se/artifactory/CS-Studio/production/
     and increments nano version (i.e. last number) by one. If the
     resulting number differs from user input, the user is prompted for
-    verification to continue anyway.
+    verification to continue.
 
     3. Get notes for changelog from Jira:
     Get notes from Jira via REST interface and format the notes to be
-    accepted by the `prepare-release.sh` script (see function
-    `prepareRelease` in this file for more info.).
+    accepted by the `prepare-release.sh` script.
 
     4. Run `prepare-release.sh`:
     `prepare-release.sh` is a community developed script for creating
@@ -391,14 +407,13 @@ def main(css_version, ce_version):
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
-    user = input("ESS username: ") # Used for Jira and Confluence
+    user = input("ESS username: ")    # Used for Jira and Confluence
     passw = getpass("ESS Password: ") # Used for Jira and Confluence
-    auth = (user, passw)
+    auth = (user, passw)              # Used for Jira and Confluence
     notes = getChangelogNotes(css_version, auth)
     prepareRelease(dir_path, release_url, css_version, notes, ce_version)
     updatePom(dir_path+"pom.xml", css_version)
     mergeRepos(dir_path+"merge.sh", css_version)
-
     updateConfluence(css_version, ce_version, notes, auth)
 
     print("\nDone")
