@@ -142,12 +142,14 @@ def prepareRelease(path, release_url, version, notes, ce_version):
         subprocess.check_call(prepare_release_cmd, shell=True)
     except subprocess.CalledProcessError:
         print("")
+        print("Oops!")
         print("Something went wrong when running the 'prepare-release.sh' " \
                   "script. Check the line above this, it is likely that the " \
                   "git tag ({}) already exists. If you still " \
                   "want to run this deployment, type " \
                   "'git tag --delete ESS-CSS-{}' and re-run this script"
                   .format(version, version))
+        print("\nAborinting")
 
         sys.exit()
 
