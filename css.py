@@ -138,7 +138,10 @@ def prepareRelease(path, release_url, version, notes, ce_version):
         'Based on CS-Studio CE {}-SNAPSHOT" true'
     .format(path, version, release_url, notes, ce_version))
 
-    subprocess.check_call(prepare_release_cmd, shell=True)
+    try:
+        subprocess.check_call(prepare_release_cmd, shell=True)
+    except Exception as e:
+        print(e)
 
 def prepareNextRelease(version): #TODO: Test function
     """Run `prepare-next-release.sh`.
