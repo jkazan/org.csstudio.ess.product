@@ -145,7 +145,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
         print("")
         print("no bueno")
 
-        # print(e)
+        print(e)
         sys.exit()
 
 def prepareNextRelease(version): #TODO: Test function
