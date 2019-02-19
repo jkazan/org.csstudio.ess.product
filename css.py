@@ -141,7 +141,12 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     try:
         subprocess.check_call(prepare_release_cmd, shell=True)
     except Exception as e:
+        print("")
+        print("")
+        print("")
+
         print(e)
+        sys.exit()
 
 def prepareNextRelease(version): #TODO: Test function
     """Run `prepare-next-release.sh`.
