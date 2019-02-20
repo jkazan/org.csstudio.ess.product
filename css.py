@@ -156,7 +156,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     #               .format(version, version))
     #     print("\nAborting")
     #     #TODO: automatic delete of tag if user wants to?
-        # sys.exit()
+        sys.exit()
 
 def prepareNextRelease(version): #TODO: Test function
     """Run `prepare-next-release.sh`.
