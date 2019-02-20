@@ -140,9 +140,9 @@ def prepareRelease(path, release_url, version, notes, ce_version):
 
     # try:
     output = subprocess.check_call(prepare_release_cmd+" | sed '$!d'", shell=True)
-    print("tag 'ESS-CSS-"+str(version)+"' already exists")
-    sys.exit()
-    if "tag 'ESS-CSS-"+str(version)+"' already exists" in output:
+    # print("tag 'ESS-CSS-"+str(version)+"' already exists")
+    # sys.exit()
+    if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
         print("FOUDN IT")
         sys.exit()
     # except subprocess.CalledProcessError:
