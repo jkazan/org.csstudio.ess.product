@@ -139,7 +139,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     .format(path, version, release_url, notes, ce_version))
 
     try:
-        subprocess.check_call(prepare_release_cmd, shell=True)
+        subprocess.check_call(prepare_release_cmd+" | tail -n 1", shell=True)
 
     # if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
     #     print("FOUDN IT")
@@ -157,6 +157,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     #     print("\nAborting")
     #     #TODO: automatic delete of tag if user wants to?
         sys.exit()
+    sys.exit()
 
 def prepareNextRelease(version): #TODO: Test function
     """Run `prepare-next-release.sh`.
