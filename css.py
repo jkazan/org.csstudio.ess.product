@@ -139,7 +139,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     .format(path, version, release_url, notes, ce_version))
 
     try:
-        subprocess.run(prepare_release_cmd, shell=True)
+        subprocess.check_call(prepare_release_cmd, shell=True)
 
     # if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
     #     print("FOUDN IT")
@@ -147,7 +147,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     # sys.exit()
     except subprocess.CalledProcessError as e:
         print("")
-        print(subprocess.output)
+        print(subprocess.stderr)
     #     print("Something went wrong when running the 'prepare-release.sh' " \
     #               "script. Check the line above this, it is likely that the " \
     #               "git tag ({}) already exists. If you still " \
