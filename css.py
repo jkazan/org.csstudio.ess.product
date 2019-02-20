@@ -139,7 +139,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     .format(path, version, release_url, notes, ce_version))
 
     try:
-        subprocess.check_call(prepare_release_cmd, shell=True)
+        output = subprocess.check_output(prepare_release_cmd, shell=True)
     except subprocess.CalledProcessError:
         print("")
         print("Oops!")
@@ -149,8 +149,8 @@ def prepareRelease(path, release_url, version, notes, ce_version):
                   "want to run this deployment, type " \
                   "'git tag --delete ESS-CSS-{}' and re-run this script"
                   .format(version, version))
-        print("\nAborinting")
-
+        print("\nAborting")
+        #TODO: automatic delete of tag if user wants to?
         sys.exit()
 
 def prepareNextRelease(version): #TODO: Test function
