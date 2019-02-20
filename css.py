@@ -139,7 +139,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     .format(path, version, release_url, notes, ce_version))
 
     try:
-        output = subprocess.check_output(prepare_release_cmd, shell=True)
+        output = subprocess.check_output(prepare_release_cmd+" | sed '$!d'", shell=True)
     except subprocess.CalledProcessError:
         print("")
         print("Oops!")
@@ -150,7 +150,6 @@ def prepareRelease(path, release_url, version, notes, ce_version):
                   "'git tag --delete ESS-CSS-{}' and re-run this script"
                   .format(version, version))
         print("\nAborting")
-        print(output)
         #TODO: automatic delete of tag if user wants to?
         sys.exit()
 
