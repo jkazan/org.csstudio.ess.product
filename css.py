@@ -138,17 +138,17 @@ def prepareRelease(path, release_url, version, notes, ce_version):
         'Based on CS-Studio CE {}-SNAPSHOT" true'
     .format(path, version, release_url, notes, ce_version))
 
-    # try:
-    output = subprocess.check_output(prepare_release_cmd+" | sed '$!d'", shell=True)
-    # print(str(output))
+    try:
+        subprocess.check_call(prepare_release_cmd+" | sed '$!d'", shell=True)
 
-    if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
-        print("FOUDN IT")
-        sys.exit()
-    sys.exit()
-    # except subprocess.CalledProcessError:
-    #     print("")
-    #     print("Oops!")
+
+    # if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
+    #     print("FOUDN IT")
+    #     sys.exit()
+    # sys.exit()
+    except subprocess.CalledProcessError as e:
+        print("")
+        print(e)
     #     print("Something went wrong when running the 'prepare-release.sh' " \
     #               "script. Check the line above this, it is likely that the " \
     #               "git tag ({}) already exists. If you still " \
