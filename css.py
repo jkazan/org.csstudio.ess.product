@@ -147,7 +147,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     # sys.exit()
     except subprocess.CalledProcessError as e:
         print("")
-        print(subprocess.STDOUT)
+        print(subprocess.output)
     #     print("Something went wrong when running the 'prepare-release.sh' " \
     #               "script. Check the line above this, it is likely that the " \
     #               "git tag ({}) already exists. If you still " \
