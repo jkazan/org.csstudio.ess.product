@@ -140,7 +140,11 @@ def prepareRelease(path, release_url, version, notes, ce_version):
 
     # try:
     output = subprocess.check_output(prepare_release_cmd+" | tail -n 100", shell=True)
-
+    print("")
+    print("")
+    print("")
+    print("")
+    print(output)
     if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
         print("FOUDN IT")
         sys.exit()
