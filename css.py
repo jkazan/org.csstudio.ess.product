@@ -150,6 +150,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
                   "'git tag --delete ESS-CSS-{}' and re-run this script"
                   .format(version, version))
         print("\nAborting")
+        print(output)
         #TODO: automatic delete of tag if user wants to?
         sys.exit()
 
@@ -420,9 +421,10 @@ def main(css_version, ce_version):
     release_url = "https://jira.esss.lu.se/projects/CSSTUDIO/versions/23001"
     dir_path = os.path.dirname(os.path.abspath(__file__))+"/"
 
-    user = input("ESS username: ")    # Used for Jira and Confluence
-    passw = getpass("ESS Password: ") # Used for Jira and Confluence
-    auth = (user, passw)              # Used for Jira and Confluence
+    # user = input("ESS username: ")    # Used for Jira and Confluence
+    # passw = getpass("ESS Password: ") # Used for Jira and Confluence
+    # auth = (user, passw)              # Used for Jira and Confluence
+    auth = ("johanneskazantzidis", "Saraeva1")              # Used for Jira and Confluence
     notes = getChangelogNotes(css_version, auth)
     prepareRelease(dir_path, release_url, css_version, notes, ce_version)
     updatePom(dir_path+"pom.xml", css_version)
