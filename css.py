@@ -138,20 +138,23 @@ def prepareRelease(path, release_url, version, notes, ce_version):
         'Based on CS-Studio CE {}-SNAPSHOT" true'
     .format(path, version, release_url, notes, ce_version))
 
-    try:
-        output = subprocess.check_call(prepare_release_cmd+" | sed '$!d'", shell=True)
-    except subprocess.CalledProcessError:
-        print("")
-        print("Oops!")
-        print("Something went wrong when running the 'prepare-release.sh' " \
-                  "script. Check the line above this, it is likely that the " \
-                  "git tag ({}) already exists. If you still " \
-                  "want to run this deployment, type " \
-                  "'git tag --delete ESS-CSS-{}' and re-run this script"
-                  .format(version, version))
-        print("\nAborting")
-        #TODO: automatic delete of tag if user wants to?
+    # try:
+    output = subprocess.check_call(prepare_release_cmd+" | sed '$!d'", shell=True)
+    if "tag 'ESS-CSS-"+version+"' already exists" in output:
+        print("FOUDN IT")
         sys.exit()
+    # except subprocess.CalledProcessError:
+    #     print("")
+    #     print("Oops!")
+    #     print("Something went wrong when running the 'prepare-release.sh' " \
+    #               "script. Check the line above this, it is likely that the " \
+    #               "git tag ({}) already exists. If you still " \
+    #               "want to run this deployment, type " \
+    #               "'git tag --delete ESS-CSS-{}' and re-run this script"
+    #               .format(version, version))
+    #     print("\nAborting")
+    #     #TODO: automatic delete of tag if user wants to?
+    #     sys.exit()
 
 def prepareNextRelease(version): #TODO: Test function
     """Run `prepare-next-release.sh`.
