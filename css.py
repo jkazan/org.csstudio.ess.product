@@ -139,7 +139,7 @@ def prepareRelease(path, release_url, version, notes, ce_version):
     .format(path, version, release_url, notes, ce_version))
 
     try:
-        subprocess.check_call(prepare_release_cmd+" | tail -n 20", shell=True)
+        subprocess.check_call(prepare_release_cmd+" | tail -n 100", shell=True)
 
     # if "tag 'ESS-CSS-"+str(version)+"' already exists" in str(output):
     #     print("FOUDN IT")
