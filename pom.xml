@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.csstudio</groupId>
   <artifactId>se.ess.ics.csstudio</artifactId>
-  <version>4.6.1.13</version>
+  <version>4.6.1.12</version>
   <packaging>pom</packaging>
   <name>ESS CS-Studio Product</name>
   <description>ESS CS-Studio product</description>
