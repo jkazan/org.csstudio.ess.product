@@ -2,17 +2,26 @@
 
 VERSION=$1
 
-declare -a repos=("https://github.com/jkazan/org.csstudio.display.builder.git"
-                "https://github.com/jkazan/cs-studio-thirdparty.git"
-                "https://github.com/jkazan/ess-css-extra.git"
-                "https://github.com/jkazan/cs-studio.git"
-                "https://github.com/jkazan/maven-osgi-bundles.git"
-               )
+declare -a repos=("org.csstudio.display.builder"
+                "cs-studio-thirdparty"
+                "ess-css-extra"
+                "cs-studio"
+                "maven-osgi-bundles"
+                "org.csstudio.ess.product"
+                 )
+
+git commit -a -m "Updating changelog, splash, manifests to version $VERSION"
+git push origin
 
 for i in "${repos[@]}"
 do
-    git pull $i
-    git commit -a -m "Merging $i with production version $VERSION"
+    cd ../$i/
+    git checkout production
+    git pull origin production
+    git merge master -m "Merge master into production"
+    git push origin production
+    git tag ESS-CS-Studio-$VERSION
+    git checkout master
 done
 
 exit 0
