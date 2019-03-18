@@ -16,7 +16,7 @@ msg="Merge master into production."
 declare -a gitcmds=(
     "git checkout production"
     "git pull origin production"
-    "git merge master -m test"
+    "git merge master -m \"Merge master\""
     "git push origin production"
     "git tag ESS-CS-Studio-$VERSION"
     "git checkout master"
