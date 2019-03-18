@@ -27,8 +27,8 @@ for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
         $k
-        ret_code = $?
-        echo "return code: $ret_code"
+        ret_code=$?
+        echo "return code: ${ret_code}"
         if [[ ${ret_code} != 0 ]]; then
             echo "ERROR occurred running: $k"
             exit 1
