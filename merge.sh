@@ -29,12 +29,11 @@ for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
         echo -e "\nRunning: $k"
-        # if [ "$k" = "asdasd" ]; then
-        #     git merge master -m "Merge master into production."
-        # else
-        #     $k
-        # fi
-        $k
+        if [ "$k" = "asdasd" ]; then
+            git merge master -m "Merge master into production."
+        else
+            $k
+        fi
         ret_code=$?
         echo "return code: ${ret_code}"
         if [[ ${ret_code} != 0 ]]; then
