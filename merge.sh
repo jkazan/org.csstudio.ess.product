@@ -14,7 +14,7 @@ declare -a repos=(
 declare -a gitcmds=(
     "git checkout production"
     "git pull origin production"
-    'git merge master -m "Merge master into production."'
+    "asdasd"
     "git push origin production"
     "git tag ESS-CS-Studio-$VERSION"
     "git checkout master"
@@ -26,7 +26,11 @@ git push origin
 for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
-        $k
+        if $k == "asdasd"; then
+            git merge master -m "Merge master into production."
+        else
+            $k
+        fi
         ret_code=$?
         echo "return code: ${ret_code}"
         if [[ ${ret_code} != 0 ]]; then
