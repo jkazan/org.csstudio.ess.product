@@ -26,7 +26,7 @@ git push origin
 for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
-        if [ $k = "asdasd" ]; then
+        if [ "$k" = "asdasd" ]; then
             git merge master -m "Merge master into production."
         else
             $k
