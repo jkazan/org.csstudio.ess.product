@@ -3,11 +3,11 @@
 VERSION=$1
 
 declare -a repos=(
-    "org.csstudio.display.builder"
-    "cs-studio-thirdparty"
     "ess-css-extra"
-    "cs-studio"
     "maven-osgi-bundles"
+    "cs-studio-thirdparty"
+    "cs-studio"
+    "org.csstudio.display.builder"
     "org.csstudio.ess.product"
 )
 
@@ -27,7 +27,10 @@ for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
         $k
-        if [[ $? != 0 ]]; then
+        ret_code = $?
+        echo "return code: ${ret_code}"
+        if [[ ${ret_code} != 0 ]]; then
+            echo "ERROR occurred running: $k"
             exit 1
         fi
     done
