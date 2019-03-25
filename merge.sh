@@ -27,10 +27,9 @@ for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
         $k
-        # $k
-        # if [[ $? != 0 ]]; then
-        #     echo "Error occurred running: $k"
-        #     exit 1
-        # fi
+        if [[ $? != 0 ]]; then
+            echo "Error occurred running: $k"
+            exit 1
+        fi
     done
 done
