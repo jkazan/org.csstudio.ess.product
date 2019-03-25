@@ -14,10 +14,10 @@ declare -a repos=(
 declare -a gitcmds=(
     "git checkout production"
     "git pull origin production"
-    "git merge master -m 'asd'"
+    "git merge test -m 'asd'"
     "git push origin production"
     "git tag ESS-CS-Studio-$VERSION"
-    "git checkout master"
+    "git checkout test"
 )
 
 git commit -a -m "Updating changelog, splash, manifests to version $VERSION"
@@ -33,3 +33,8 @@ for i in "${repos[@]}"; do
         fi
     done
 done
+
+
+
+
+# TODO: CHANGE TEST TO MASTER!
