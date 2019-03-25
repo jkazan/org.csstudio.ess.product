@@ -23,9 +23,9 @@ declare -a gitcmds=(
 git commit -a -m "Updating changelog, splash, manifests to version $VERSION"
 git push origin
 
-for i in '${repos[@]}'; do
+for i in "${repos[@]}"; do
     cd ../$i/
-    for k in '${gitcmds[@]}'; do
+    for k in "${gitcmds[@]}"; do
         $k
         if [[ $? != 0 ]]; then
             echo "Error occurred running: $k"
