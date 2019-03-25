@@ -26,7 +26,7 @@ git push origin
 for i in "${repos[@]}"; do
     cd ../$i/
     for k in "${gitcmds[@]}"; do
-        echo $k
+        $k
         # $k
         # if [[ $? != 0 ]]; then
         #     echo "Error occurred running: $k"
