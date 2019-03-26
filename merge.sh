@@ -13,7 +13,7 @@ declare -a repos=(
 
 declare -a gitcmds=(
     "git checkout test"
-    "git pull origin"
+    "git fetch origin"
     "git checkout production"
     "git pull origin production"
     "git merge test -m 'test message'"
