@@ -12,9 +12,10 @@ declare -a repos=(
 )
 
 declare -a gitcmds=(
+    "git checkout test"
     "git checkout production"
     "git pull origin production"
-    "git merge test"
+    "git merge test -m 'test message'"
     "git push origin production"
     "git tag ESS-CS-Studio-$VERSION"
     "git checkout test"
